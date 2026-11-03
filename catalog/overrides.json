@@ -1,0 +1,954 @@
+{
+  "_readme": "Human parts of the catalog. scripts/build-catalog.js merges this into actions.json; re-running never loses it. Keys are \"METHOD /path\" exactly as the generator prints them. risk: low | normal | high | blocked (blocked = never exposed). WRITE_LEVELS on the connector decides which risks are usable (default low,normal).",
+  "excludeRules": [
+    {
+      "match": "^\\w+ /auth/",
+      "reason": "sign-in route (the connector's sign-in page handles it)"
+    },
+    {
+      "match": "^\\w+ /whatsapp/debug",
+      "reason": "debug route"
+    },
+    {
+      "match": "^\\w+ /integrations/whatsapp",
+      "reason": "integration setup (takes or shows WhatsApp/Meta secrets)"
+    },
+    {
+      "match": "^\\w+ /platform-integrations",
+      "reason": "integration setup (webhook URLs and sheet links are secrets)"
+    },
+    {
+      "match": "^\\w+ /settings/",
+      "reason": "org settings (admin screens only)"
+    },
+    {
+      "match": "^\\w+ /cities",
+      "reason": "org settings (admin map/spelling fixes)"
+    },
+    {
+      "match": "^\\w+ /notifications/push/",
+      "reason": "browser push setup (device only)"
+    },
+    {
+      "match": "^PATCH /employees/me/(email|password)$",
+      "reason": "session-only: takes the user's password"
+    },
+    {
+      "match": "^(POST|PATCH|DELETE) /(users|managers|manager/team-members)(/|$)",
+      "reason": "user management (blocked in v1: creates, changes or removes logins)"
+    },
+    {
+      "match": "^PATCH /employees/:id/employee-code$",
+      "reason": "user management (blocked in v1)"
+    },
+    {
+      "match": "^POST /leads/(bulk-assign|bulk-delete|lost/shuffle)$",
+      "reason": "bulk operation (blocked)"
+    },
+    {
+      "match": "^\\w+ /leads/imports",
+      "reason": "lead imports (Excel uploads are handled in the app)"
+    },
+    {
+      "match": "^(PATCH /leads/seen|GET /leads/unseen-count|POST /leads/:leadId/whatsapp/read)$",
+      "reason": "app-only screen state (new-lead dot, chat read marks)"
+    }
+  ],
+  "synonyms": {
+    "enquiry": [
+      "lead"
+    ],
+    "enquiries": [
+      "lead"
+    ],
+    "inquiry": [
+      "lead"
+    ],
+    "customer": [
+      "lead"
+    ],
+    "customers": [
+      "lead"
+    ],
+    "party": [
+      "lead"
+    ],
+    "dealer": [
+      "lead"
+    ],
+    "contractor": [
+      "lead"
+    ],
+    "carpenter": [
+      "lead"
+    ],
+    "architect": [
+      "lead"
+    ],
+    "client": [
+      "lead"
+    ],
+    "grahak": [
+      "lead"
+    ],
+    "graahak": [
+      "lead"
+    ],
+    "callback": [
+      "follow"
+    ],
+    "followup": [
+      "follow"
+    ],
+    "follow-up": [
+      "follow"
+    ],
+    "yaad": [
+      "follow",
+      "task"
+    ],
+    "remind": [
+      "task"
+    ],
+    "reminder": [
+      "task"
+    ],
+    "todo": [
+      "task"
+    ],
+    "kaam": [
+      "task"
+    ],
+    "stock": [
+      "product",
+      "inventory"
+    ],
+    "maal": [
+      "stock",
+      "product"
+    ],
+    "godown": [
+      "inventory",
+      "stock"
+    ],
+    "warehouse": [
+      "inventory",
+      "stock"
+    ],
+    "plywood": [
+      "product"
+    ],
+    "sheet": [
+      "product"
+    ],
+    "sheets": [
+      "product"
+    ],
+    "laminate": [
+      "product"
+    ],
+    "item": [
+      "product"
+    ],
+    "received": [
+      "stock"
+    ],
+    "aaya": [
+      "stock"
+    ],
+    "chutti": [
+      "leave"
+    ],
+    "chhutti": [
+      "leave"
+    ],
+    "holiday": [
+      "leave"
+    ],
+    "off": [
+      "leave"
+    ],
+    "hajri": [
+      "attendance"
+    ],
+    "haziri": [
+      "attendance"
+    ],
+    "present": [
+      "attendance"
+    ],
+    "absent": [
+      "attendance"
+    ],
+    "checkin": [
+      "check",
+      "attendance"
+    ],
+    "lakshya": [
+      "target"
+    ],
+    "goal": [
+      "target"
+    ],
+    "goals": [
+      "target"
+    ],
+    "visit": [
+      "trip",
+      "activity"
+    ],
+    "route": [
+      "trip"
+    ],
+    "tour": [
+      "trip"
+    ],
+    "dora": [
+      "trip"
+    ],
+    "staff": [
+      "user",
+      "team"
+    ],
+    "employee": [
+      "user",
+      "team"
+    ],
+    "employees": [
+      "user",
+      "team"
+    ],
+    "caller": [
+      "team",
+      "user"
+    ],
+    "converted": [
+      "status",
+      "performance"
+    ],
+    "conversion": [
+      "performance"
+    ],
+    "sale": [
+      "converted",
+      "performance"
+    ],
+    "bikri": [
+      "converted"
+    ],
+    "chat": [
+      "whatsapp"
+    ],
+    "message": [
+      "whatsapp"
+    ],
+    "messages": [
+      "whatsapp"
+    ],
+    "note": [
+      "note"
+    ],
+    "remark": [
+      "note"
+    ],
+    "feedback": [
+      "lead",
+      "note"
+    ],
+    "report": [
+      "report",
+      "performance",
+      "summary"
+    ]
+  },
+  "actions": {
+    "POST /activities": {
+      "name": "log_activity",
+      "risk": "low",
+      "examples": [
+        "log: visited 3 shops in Siyaganj"
+      ],
+      "exampleBody": {
+        "type": "SITE_VISIT",
+        "description": "Visited 3 hardware shops in Siyaganj"
+      }
+    },
+    "GET /activities/:employeeId": {
+      "name": "employee_activity",
+      "idHints": {
+        "employeeId": "the employee's user id (find it with list_users or list_team_members)"
+      }
+    },
+    "GET /activities/me": {
+      "name": "my_activity",
+      "examples": [
+        "what did I log today?"
+      ]
+    },
+    "GET /activities/org": {
+      "name": "org_activity"
+    },
+    "GET /activities/report": {
+      "name": "activity_report"
+    },
+    "GET /activities/team": {
+      "name": "team_activity"
+    },
+    "GET /attendance": {
+      "name": "attendance_list"
+    },
+    "GET /attendance/:employeeId": {
+      "name": "employee_attendance",
+      "idHints": {
+        "employeeId": "the employee's user id (find it with list_users or list_team_members)"
+      }
+    },
+    "POST /attendance/check-in": {
+      "name": "check_in",
+      "risk": "high",
+      "warning": "This records your check-in for today at the current time."
+    },
+    "POST /attendance/check-out": {
+      "name": "check_out",
+      "risk": "high",
+      "warning": "This records your check-out for today at the current time; it can't be undone from the chat."
+    },
+    "GET /attendance/me": {
+      "name": "my_attendance",
+      "examples": [
+        "mera attendance is mahine"
+      ]
+    },
+    "GET /attendance/org": {
+      "name": "org_attendance_day",
+      "examples": [
+        "who is absent today?"
+      ]
+    },
+    "GET /attendance/team": {
+      "name": "team_attendance_day",
+      "examples": [
+        "who in my team hasn't checked in?"
+      ]
+    },
+    "GET /attendance/today": {
+      "name": "my_attendance_today"
+    },
+    "GET /dashboard/me": {
+      "name": "my_dashboard",
+      "examples": [
+        "how many leads do we have by status and source?"
+      ]
+    },
+    "GET /employees/:id/overview": {
+      "name": "employee_overview",
+      "idHints": {
+        "id": "the employee's user id (find it with list_users or list_team_members)"
+      }
+    },
+    "GET /employees/:id/profile": {
+      "name": "employee_profile",
+      "idHints": {
+        "id": "the employee's user id (find it with list_users or list_team_members)"
+      }
+    },
+    "GET /employees/:id/summary": {
+      "name": "employee_lead_summary",
+      "idHints": {
+        "id": "the employee's user id (find it with list_users or list_team_members)"
+      }
+    },
+    "PATCH /employees/me/profile": {
+      "name": "update_my_profile",
+      "risk": "normal"
+    },
+    "GET /employees/team-rollup": {
+      "name": "team_rollup"
+    },
+    "GET /employees/team-summary": {
+      "name": "team_workload"
+    },
+    "GET /follow-ups/today": {
+      "name": "followups_due_today",
+      "examples": [
+        "aaj kin leads ko call karna hai?",
+        "follow-ups due today"
+      ]
+    },
+    "GET /inventory/products": {
+      "name": "list_products",
+      "examples": [
+        "low stock products",
+        "Century products"
+      ],
+      "list": {
+        "quantityFields": [
+          "stock"
+        ],
+        "unitField": "unit"
+      }
+    },
+    "POST /inventory/products": {
+      "name": "add_product",
+      "risk": "high",
+      "labelFields": [
+        "name"
+      ],
+      "warning": "This adds a product to the catalogue every staff member sees."
+    },
+    "DELETE /inventory/products/:id": {
+      "name": "delete_product",
+      "risk": "high",
+      "labelFields": [
+        "name",
+        "brand",
+        "thickness",
+        "size"
+      ],
+      "idHints": {
+        "id": "the product's id (find it with check_stock or list_products)"
+      },
+      "exampleBody": {
+        "confirmation": "delete"
+      },
+      "warning": "This removes the product from the catalogue.",
+      "bodyDescriptions": {
+        "confirmation": "the word \"delete\", confirming the deletion"
+      }
+    },
+    "GET /inventory/products/:id": {
+      "name": "get_product",
+      "idHints": {
+        "id": "the product's id (find it with check_stock or list_products)"
+      }
+    },
+    "PATCH /inventory/products/:id": {
+      "name": "edit_product",
+      "risk": "high",
+      "labelFields": [
+        "name",
+        "brand",
+        "thickness",
+        "size"
+      ],
+      "idHints": {
+        "id": "the product's id (find it with check_stock or list_products)"
+      }
+    },
+    "PATCH /inventory/products/:id/stock": {
+      "name": "adjust_stock",
+      "risk": "high",
+      "labelFields": [
+        "name",
+        "brand",
+        "thickness",
+        "size"
+      ],
+      "idHints": {
+        "id": "the product's id (find it with check_stock or list_products)"
+      },
+      "examples": [
+        "50 sheets of 18mm BWP received today"
+      ],
+      "bodyDescriptions": {
+        "change": "sheets/pieces to add (positive) or remove (negative)"
+      },
+      "warning": "This changes the stock count at once and records a stock movement."
+    },
+    "GET /inventory/summary": {
+      "name": "inventory_summary",
+      "examples": [
+        "how many products and units in stock, per category?"
+      ]
+    },
+    "GET /leads": {
+      "name": "list_leads",
+      "labelFields": [
+        "name",
+        "phone"
+      ],
+      "examples": [
+        "new enquiries this week",
+        "open leads in Indore"
+      ],
+      "queryDescriptions": {
+        "from": "lead date from, YYYY-MM-DD (business day, Asia/Kolkata)",
+        "to": "lead date to, YYYY-MM-DD (inclusive)",
+        "assignedToId": "user id of the assignee (find it with list_users)"
+      }
+    },
+    "POST /leads": {
+      "name": "create_lead",
+      "risk": "normal",
+      "labelFields": [
+        "name",
+        "phone"
+      ],
+      "examples": [
+        "add lead Ramesh 98xxxxxxxx Indore, needs 18mm BWP 40 sheets"
+      ],
+      "bodyDescriptions": {
+        "assignToId": "user id to assign to (Admin: anyone; Manager: self or team). Leave out for automatic allocation or (Caller) yourself",
+        "date": "the enquiry date if not today, YYYY-MM-DD"
+      }
+    },
+    "DELETE /leads/:id": {
+      "name": "delete_lead",
+      "risk": "high",
+      "labelFields": [
+        "name",
+        "phone"
+      ],
+      "idHints": {
+        "id": "the lead's id (find it with find_lead or list_leads)"
+      },
+      "warning": "This deletes the lead: it disappears from every list and the Admins are notified.",
+      "exampleBody": {
+        "confirmation": "delete"
+      },
+      "bodyDescriptions": {
+        "confirmation": "the word \"delete\", confirming the deletion"
+      }
+    },
+    "GET /leads/:id": {
+      "name": "get_lead",
+      "labelFields": [
+        "name",
+        "phone"
+      ],
+      "idHints": {
+        "id": "the lead's id (find it with find_lead or list_leads)"
+      }
+    },
+    "PATCH /leads/:id": {
+      "name": "update_lead",
+      "risk": "normal",
+      "labelFields": [
+        "name",
+        "phone"
+      ],
+      "idHints": {
+        "id": "the lead's id (find it with find_lead or list_leads)"
+      }
+    },
+    "GET /leads/:id/activities": {
+      "name": "lead_timeline",
+      "idHints": {
+        "id": "the lead's id (find it with find_lead or list_leads)"
+      }
+    },
+    "PATCH /leads/:id/assign": {
+      "name": "assign_lead",
+      "risk": "normal",
+      "labelFields": [
+        "name",
+        "phone"
+      ],
+      "idHints": {
+        "id": "the lead's id (find it with find_lead or list_leads)"
+      },
+      "bodyDescriptions": {
+        "toUserId": "user id of the new assignee (find it with list_users or list_team_members)"
+      },
+      "warning": "The new assignee is notified."
+    },
+    "POST /leads/:id/follow-ups": {
+      "name": "log_follow_up",
+      "risk": "low",
+      "labelFields": [
+        "name",
+        "phone"
+      ],
+      "idHints": {
+        "id": "the lead's id (find it with find_lead or list_leads)"
+      },
+      "bodyDescriptions": {
+        "nextFollowUpAt": "when to follow up next, ISO with offset, e.g. 2026-11-05T11:00:00+05:30",
+        "outcome": "short outcome, e.g. CONNECTED, NO_ANSWER, VISITED, INTERESTED"
+      }
+    },
+    "POST /leads/:id/notes": {
+      "name": "add_lead_note",
+      "risk": "low",
+      "labelFields": [
+        "name",
+        "phone"
+      ],
+      "idHints": {
+        "id": "the lead's id (find it with find_lead or list_leads)"
+      }
+    },
+    "PATCH /leads/:id/status": {
+      "name": "change_lead_status",
+      "risk": "normal",
+      "labelFields": [
+        "name",
+        "phone"
+      ],
+      "idHints": {
+        "id": "the lead's id (find it with find_lead or list_leads)"
+      },
+      "warnings": [
+        {
+          "when": {
+            "status": "LOST"
+          },
+          "text": "Marking it LOST may hand the lead to someone else automatically if the org has auto-reallocation on."
+        }
+      ]
+    },
+    "GET /leads/:leadId/whatsapp/messages": {
+      "name": "lead_whatsapp_messages",
+      "idHints": {
+        "leadId": "the lead's id (find it with find_lead or list_leads)"
+      }
+    },
+    "POST /leads/:leadId/whatsapp/messages": {
+      "name": "send_whatsapp_message",
+      "risk": "high",
+      "idHints": {
+        "leadId": "the lead's id (find it with find_lead or list_leads)"
+      },
+      "warning": "This sends a real WhatsApp message to the customer. It can't be unsent."
+    },
+    "POST /leads/:leadId/whatsapp/template": {
+      "name": "send_whatsapp_template",
+      "risk": "high",
+      "idHints": {
+        "leadId": "the lead's id (find it with find_lead or list_leads)"
+      },
+      "warning": "This sends a real WhatsApp template message to the customer. It can't be unsent."
+    },
+    "GET /leads/cities": {
+      "name": "lead_cities"
+    },
+    "GET /leads/filter-options": {
+      "name": "lead_filter_options",
+      "examples": [
+        "what do customers buy plywood for?"
+      ]
+    },
+    "GET /leads/team-performance": {
+      "name": "team_performance",
+      "examples": [
+        "who converted the most?"
+      ]
+    },
+    "PATCH /leave/:id/approve": {
+      "name": "approve_leave",
+      "risk": "high",
+      "idHints": {
+        "id": "the leave request's id (find it with team_pending_leave or org_leave)"
+      },
+      "warning": "Approved leave days block check-in for those days.",
+      "labelFrom": [
+        "team_pending_leave",
+        "org_leave"
+      ]
+    },
+    "PATCH /leave/:id/reject": {
+      "name": "reject_leave",
+      "risk": "high",
+      "idHints": {
+        "id": "the leave request's id (find it with team_pending_leave or org_leave)"
+      },
+      "labelFrom": [
+        "team_pending_leave",
+        "org_leave"
+      ]
+    },
+    "POST /leave/apply": {
+      "name": "apply_leave",
+      "risk": "normal",
+      "examples": [
+        "apply leave 10-12 Nov, sister's wedding"
+      ]
+    },
+    "GET /leave/me": {
+      "name": "my_leave"
+    },
+    "GET /leave/org": {
+      "name": "org_leave"
+    },
+    "GET /leave/team/pending": {
+      "name": "team_pending_leave",
+      "examples": [
+        "any leave waiting for me?"
+      ]
+    },
+    "PATCH /manager/leads/:leadId/assign": {
+      "name": "assign_lead_to_team_member",
+      "risk": "normal",
+      "idHints": {
+        "leadId": "the lead's id (find it with find_lead or list_leads)"
+      },
+      "warning": "The team member is notified."
+    },
+    "GET /manager/peers": {
+      "name": "manager_peers"
+    },
+    "GET /manager/team-members": {
+      "name": "list_team_members"
+    },
+    "GET /manager/team-members/:id": {
+      "name": "get_team_member",
+      "idHints": {
+        "id": "the team member's user id (find it with list_team_members)"
+      }
+    },
+    "GET /manager/team-members/:id/deletion-impact": {
+      "exclude": "user management (blocked in v1)"
+    },
+    "GET /managers": {
+      "name": "list_managers"
+    },
+    "GET /managers/:id": {
+      "name": "get_manager",
+      "idHints": {
+        "id": "the manager's user id (find it with list_managers)"
+      }
+    },
+    "GET /notifications": {
+      "name": "list_notifications"
+    },
+    "PATCH /notifications/:id/read": {
+      "name": "mark_notification_read",
+      "risk": "low",
+      "idHints": {
+        "id": "the notification's id (find it with list_notifications)"
+      }
+    },
+    "GET /notifications/email-preference": {
+      "name": "my_email_preference"
+    },
+    "PATCH /notifications/email-preference": {
+      "name": "set_my_email_preference",
+      "risk": "low"
+    },
+    "PATCH /notifications/read-all": {
+      "name": "mark_all_notifications_read",
+      "risk": "low"
+    },
+    "GET /notifications/unread-count": {
+      "name": "unread_notification_count"
+    },
+    "PUT /targets": {
+      "name": "set_target",
+      "risk": "high",
+      "warning": "This sets the person's monthly target; it replaces any target already set for that month."
+    },
+    "GET /targets/me": {
+      "name": "my_target",
+      "examples": [
+        "my target vs actual this month"
+      ]
+    },
+    "GET /targets/team": {
+      "name": "team_targets"
+    },
+    "PATCH /task-allotment/:id/skip": {
+      "name": "skip_allotted_lead",
+      "risk": "low",
+      "idHints": {
+        "id": "the allotment's id (find it with my_allotted_leads)"
+      },
+      "labelFrom": [
+        "my_allotted_leads"
+      ]
+    },
+    "GET /task-allotment/me": {
+      "name": "my_allotted_leads",
+      "examples": [
+        "which old leads did I get today?"
+      ]
+    },
+    "GET /task-allotment/overview": {
+      "name": "allotment_overview"
+    },
+    "POST /tasks": {
+      "name": "create_task",
+      "risk": "normal",
+      "labelFields": [
+        "title"
+      ],
+      "examples": [
+        "remind me tomorrow 11 am to call Jain Hardware"
+      ],
+      "bodyDescriptions": {
+        "dueAt": "when it's due, ISO with offset, e.g. 2026-11-05T11:00:00+05:30",
+        "assignedToId": "user id to give the task to (Managers/Admins); leave out for yourself",
+        "leadId": "the related lead's id (find it with find_lead)"
+      },
+      "exampleBody": {
+        "title": "Call Jain Hardware about BWP rates",
+        "taskType": "CALL",
+        "dueAt": "2026-11-05T11:00:00+05:30"
+      }
+    },
+    "DELETE /tasks/:id": {
+      "name": "delete_task",
+      "risk": "high",
+      "labelFields": [
+        "title"
+      ],
+      "idHints": {
+        "id": "the task's id (find it with my_tasks)"
+      }
+    },
+    "GET /tasks/:id": {
+      "name": "get_task",
+      "labelFields": [
+        "title"
+      ],
+      "idHints": {
+        "id": "the task's id (find it with my_tasks)"
+      }
+    },
+    "PATCH /tasks/:id": {
+      "name": "edit_task",
+      "risk": "normal",
+      "labelFields": [
+        "title"
+      ],
+      "idHints": {
+        "id": "the task's id (find it with my_tasks)"
+      }
+    },
+    "PATCH /tasks/:id/complete": {
+      "name": "complete_task",
+      "risk": "low",
+      "labelFields": [
+        "title"
+      ],
+      "idHints": {
+        "id": "the task's id (find it with my_tasks)"
+      }
+    },
+    "GET /tasks/assigned-by-me": {
+      "name": "tasks_assigned_by_me"
+    },
+    "GET /tasks/me": {
+      "name": "my_tasks",
+      "examples": [
+        "my pending tasks"
+      ]
+    },
+    "GET /trips": {
+      "name": "list_trips"
+    },
+    "POST /trips": {
+      "name": "save_trip",
+      "risk": "normal",
+      "labelFields": [
+        "name"
+      ]
+    },
+    "DELETE /trips/:id": {
+      "name": "delete_trip",
+      "risk": "high",
+      "labelFields": [
+        "name"
+      ],
+      "idHints": {
+        "id": "the trip's id (find it with list_trips)"
+      }
+    },
+    "GET /trips/:id": {
+      "name": "get_trip",
+      "labelFields": [
+        "name"
+      ],
+      "idHints": {
+        "id": "the trip's id (find it with list_trips)"
+      }
+    },
+    "PATCH /trips/:id": {
+      "name": "edit_trip",
+      "risk": "normal",
+      "labelFields": [
+        "name"
+      ],
+      "idHints": {
+        "id": "the trip's id (find it with list_trips)"
+      }
+    },
+    "GET /trips/:id/leads": {
+      "name": "trip_leads",
+      "idHints": {
+        "id": "the trip's id (find it with list_trips)"
+      }
+    },
+    "POST /trips/:id/share": {
+      "name": "share_trip",
+      "risk": "normal",
+      "labelFields": [
+        "name"
+      ],
+      "idHints": {
+        "id": "the trip's id (find it with list_trips)"
+      },
+      "warning": "Newly added people are notified."
+    },
+    "POST /trips/:id/tasks": {
+      "name": "trip_to_visit_tasks",
+      "risk": "normal",
+      "labelFields": [
+        "name"
+      ],
+      "idHints": {
+        "id": "the trip's id (find it with list_trips)"
+      }
+    },
+    "GET /trips/cities": {
+      "name": "lead_cities_on_map"
+    },
+    "POST /trips/leads": {
+      "name": "leads_in_cities",
+      "kind": "read"
+    },
+    "POST /trips/optimise": {
+      "name": "optimise_trip_order",
+      "kind": "read"
+    },
+    "GET /trips/places": {
+      "name": "search_places"
+    },
+    "POST /trips/plan": {
+      "name": "plan_trip_route",
+      "kind": "read",
+      "examples": [
+        "plan a trip Indore to Ujjain, which leads are on the way?"
+      ]
+    },
+    "GET /trips/share-candidates": {
+      "name": "trip_share_candidates"
+    },
+    "GET /users": {
+      "name": "list_users",
+      "examples": [
+        "list my staff"
+      ]
+    },
+    "GET /users/:id": {
+      "name": "get_user",
+      "idHints": {
+        "id": "the user's id (find it with list_users)"
+      }
+    },
+    "GET /users/:id/deletion-impact": {
+      "exclude": "user management (blocked in v1)"
+    },
+    "GET /whatsapp/ad-sources": {
+      "name": "whatsapp_ad_sources"
+    },
+    "GET /whatsapp/inbox": {
+      "name": "whatsapp_inbox",
+      "examples": [
+        "unread WhatsApp chats"
+      ]
+    },
+    "GET /whatsapp/templates": {
+      "name": "whatsapp_templates"
+    }
+  }
+}

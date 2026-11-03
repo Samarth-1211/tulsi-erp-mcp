@@ -1,0 +1,6 @@
+**
+!connector/server.js
+!connector/lib/**
+!connector/scripts/**
+!catalog/actions.json
+!package.json

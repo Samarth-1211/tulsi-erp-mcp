@@ -1,0 +1,61 @@
+# Tulsi ERP MCP connector — its own compose project on the same VPS as the
+# backend (RCRM_Backend/docker-compose.yml, project "tulsi-erp").
+#
+# It joins the backend's existing "edge" network, so:
+#   - it reaches the API at http://backend:3000 (never through the internet);
+#   - the backend's Caddy reaches it at tulsi-erp-mcp:8790 (see Caddyfile.snippet).
+# No port is published on the host.
+#
+#   cd tulsi-erp-mcp/deploy
+#   cp .env.example .env        # fill in MCP_DOMAIN and CONNECTOR_SECRET
+#   docker compose up -d --build
+#
+# Start the backend first (its network must exist). Never `down -v`: the volume
+# holds every connection; losing it (or CONNECTOR_SECRET) only means users sign in again.
+
+name: tulsi-erp-mcp
+
+services:
+  tulsi-erp-mcp:
+    build:
+      context: ..
+    restart: unless-stopped
+    init: true
+    environment:
+      NODE_ENV: production
+      PUBLIC_URL: https://${MCP_DOMAIN:?Set MCP_DOMAIN in .env}
+      API_URL: ${API_URL:-http://backend:3000}
+      CONNECTOR_SECRET: ${CONNECTOR_SECRET:?Set CONNECTOR_SECRET in .env (openssl rand -hex 32)}
+      TOOL_MODE: catalog
+      WRITE_LEVELS: ${WRITE_LEVELS:-low,normal}
+      CIMD_ENABLED: "true"
+      ALLOWED_REDIRECT_HOSTS: ${ALLOWED_REDIRECT_HOSTS:-claude.ai,claude.com,chatgpt.com,oauth-redirect.googleusercontent.com,oauth-redirect-sandbox.googleusercontent.com,oauth-redirect-test.googleusercontent.com,vertexaisearch.cloud.google.com,callback.mistral.ai,www.perplexity.ai,enterprise.perplexity.ai,global.consent.azure-apim.net,vscode.dev,cursor.com}
+      # One proxy hop (Caddy) in front: X-Forwarded-For's last entry is the real client IP.
+      TRUST_PROXY: "1"
+    volumes:
+      - tulsi_erp_mcp_data:/data
+    networks:
+      - edge
+    expose:
+      - "8790"
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          memory: 256m
+    logging:
+      driver: json-file
+      options:
+        max-size: "20m"
+        max-file: "5"
+
+networks:
+  edge:
+    external: true
+    name: tulsi-erp_edge
+
+volumes:
+  tulsi_erp_mcp_data:

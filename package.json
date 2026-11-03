@@ -1,0 +1,18 @@
+{
+  "name": "tulsi-erp-mcp",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Tulsi ERP MCP connector: one remote MCP server with OAuth sign-in for Claude, ChatGPT, Gemini and other assistants. No npm dependencies.",
+  "license": "UNLICENSED",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "start": "node connector/server.js",
+    "catalog": "node scripts/build-catalog.js",
+    "test": "node --test test/unit.test.js",
+    "demo:db": "node demo/setup-db.js --reset",
+    "demo:seed": "node demo/seed-demo.js",
+    "demo:backend": "node demo/start-backend.js",
+    "demo:connector": "node demo/start-connector.js",
+    "demo:test": "node demo/run-tests.js"
+  }
+}

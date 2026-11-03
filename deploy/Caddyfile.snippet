@@ -1,0 +1,32 @@
+# Add this site block to RCRM_Backend/deploy/Caddyfile (needs your go-ahead: it
+# is a backend deploy file), and give the caddy service the variable:
+#
+#   caddy:
+#     environment:
+#       MCP_DOMAIN: ${MCP_DOMAIN:?Set MCP_DOMAIN in .env}
+#
+# and MCP_DOMAIN=mcp.example.com in RCRM_Backend/.env. Point MCP_DOMAIN's DNS
+# A record at the VPS (DNS only / grey cloud, like API_DOMAIN), then
+# `docker compose up -d caddy` in RCRM_Backend. Caddy fetches the certificate.
+
+{$MCP_DOMAIN} {
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+		-Server
+	}
+	encode zstd gzip
+
+	# MCP requests and sign-in forms are small; the connector also caps at 1 MB.
+	request_body {
+		max_size 1MB
+	}
+
+	# Caddy sets X-Forwarded-For to the client IP; the connector (TRUST_PROXY=1)
+	# passes it on, so the backend's per-IP sign-in limits see the real user.
+	reverse_proxy tulsi-erp-mcp:8790 {
+		transport http {
+			read_timeout 120s
+		}
+	}
+}
