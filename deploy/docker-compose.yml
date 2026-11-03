@@ -27,7 +27,7 @@ services:
       API_URL: ${API_URL:-http://backend:3000}
       CONNECTOR_SECRET: ${CONNECTOR_SECRET:?Set CONNECTOR_SECRET in .env (openssl rand -hex 32)}
       TOOL_MODE: catalog
-      WRITE_LEVELS: ${WRITE_LEVELS:-low,normal}
+      WRITE_LEVELS: ${WRITE_LEVELS:-low,normal,high}
       CIMD_ENABLED: "true"
       ALLOWED_REDIRECT_HOSTS: ${ALLOWED_REDIRECT_HOSTS:-claude.ai,claude.com,chatgpt.com,oauth-redirect.googleusercontent.com,oauth-redirect-sandbox.googleusercontent.com,oauth-redirect-test.googleusercontent.com,vertexaisearch.cloud.google.com,callback.mistral.ai,www.perplexity.ai,enterprise.perplexity.ai,global.consent.azure-apim.net,vscode.dev,cursor.com}
       # One proxy hop (Caddy) in front: X-Forwarded-For's last entry is the real client IP.

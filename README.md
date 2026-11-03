@@ -53,12 +53,16 @@ settings, user management, bulk operations, super-admin).
 
 ### What assistants may change (`WRITE_LEVELS`)
 
-| Risk | Actions | Default |
-|---|---|---|
-| low | lead note, follow-up, log activity, complete task, skip allotted lead, notifications read, own email preference | **on** |
-| normal | create/edit lead, change lead status, assign lead, create/edit task, apply leave, save/share trip, own profile | **on** |
-| high | adjust stock, add/edit/delete product, approve/reject leave, set target, delete lead/task/trip, check-in/out, send WhatsApp | off (`WRITE_LEVELS=low,normal,high`) |
-| blocked | users/managers, org settings, integrations, bulk assign/delete, imports | never |
+| Risk | Actions | Production (`deploy/`) | Code default |
+|---|---|---|---|
+| low | lead note, follow-up, log activity, complete task, skip allotted lead, notifications read, own email preference | **on** | on |
+| normal | create/edit lead, change lead status, assign lead, create/edit task, apply leave, save/share trip, own profile | **on** | on |
+| high | adjust stock, add/edit/delete product, approve/reject leave, set target, delete lead/task/trip, check-in/out, send WhatsApp | **on** (`WRITE_LEVELS=low,normal,high`) | off |
+| blocked | users/managers, org settings, integrations, bulk assign/delete, imports | never | never |
+
+Every change, at every level, is still a draft the user must see and confirm,
+and Tulsi ERP's own role checks still apply (a Caller can't approve leave).
+High-risk drafts carry a warning line saying what the change does.
 
 ## Try it locally (demo data only)
 
@@ -89,7 +93,7 @@ npm test                           # offline unit tests
 
 ## Connect each assistant (production)
 
-Address everywhere: **`https://<MCP_DOMAIN>/mcp`**, name **Tulsi ERP**. Menus in
+Address everywhere: **`https://mcp.tulsicrm.tdmgroups.com/mcp`** (`<MCP_DOMAIN>` below), name **Tulsi ERP**. Menus in
 these apps change often; follow the current UI. First question to try:
 *"Who am I in Tulsi ERP?"*
 
@@ -110,18 +114,21 @@ change their password, are deactivated or whose org is suspended get
 
 ## Deploy (VPS next to the backend)
 
-1. DNS: A record `mcp.<your-domain>` → the VPS, **DNS only** (like `API_DOMAIN`).
-   Prefer a one-level subdomain (Cloudflare Universal SSL covers only one level).
-2. Backend Caddy — *a backend deploy change, needs your go-ahead*: add the site
-   block from [deploy/Caddyfile.snippet](deploy/Caddyfile.snippet) and
-   `MCP_DOMAIN` to the caddy service, then `docker compose up -d caddy`.
-3. Connector:
+1. DNS: A record `mcp.tulsicrm` in the `tdmgroups.com` zone → the VPS IP,
+   **DNS only / grey cloud** (like `API_DOMAIN`). It is a two-level name, which
+   Cloudflare's Universal SSL doesn't cover, so it must not be proxied.
+2. Backend Caddy: already in `RCRM_Backend` (`deploy/Caddyfile` site block,
+   `MCP_DOMAIN` defaulting to `mcp.tulsicrm.tdmgroups.com` in its compose file).
+   Its normal deploy recreates Caddy, which then fetches the certificate once
+   DNS points at the VPS. If DNS came later: `cd /opt/tulsi-erp && docker compose restart caddy`.
+3. Connector, as `deploy` (private repo: add a read-only deploy key as in the backend's DEPLOYMENT.md §5.5):
    ```bash
-   cd tulsi-erp-mcp/deploy
-   cp .env.example .env          # MCP_DOMAIN, CONNECTOR_SECRET=$(openssl rand -hex 32)
-   docker compose up -d --build  # joins the backend's tulsi-erp_edge network
-   curl https://mcp.<your-domain>/health    # {"ok":true,"app":"up",…}
-   curl https://mcp.<your-domain>/.well-known/oauth-authorization-server
+   cd /opt && git clone git@github.com:Samarth-1211/tulsi-erp-mcp.git
+   cd /opt/tulsi-erp-mcp/deploy
+   cp .env.example .env && chmod 600 .env   # set CONNECTOR_SECRET=$(openssl rand -hex 32)
+   docker compose up -d --build             # joins the backend's tulsi-erp_edge network
+   curl https://mcp.tulsicrm.tdmgroups.com/health    # {"ok":true,"app":"up",…}
+   curl https://mcp.tulsicrm.tdmgroups.com/.well-known/oauth-authorization-server
    ```
 4. Back up the `tulsi_erp_mcp_data` volume together with `CONNECTOR_SECRET`.
    Losing either only means everyone signs in again.
@@ -141,7 +148,7 @@ reinstall. When the backend's routes or DTOs change: `npm run catalog`
 | `CONNECTOR_SECRET` | generated file in `DATA_DIR` (dev) | **required** in production, 32+ chars; encrypts stored credentials |
 | `DATA_DIR` | `connector/data` | state file + log |
 | `TOOL_MODE` | `catalog` | `direct` = also one tool per action (demos/tests only; ~10× the tokens) |
-| `WRITE_LEVELS` | `low,normal` | add `high` to allow the high-risk changes |
+| `WRITE_LEVELS` | `low,normal` (`deploy/` sets `low,normal,high`) | which risk levels assistants may prepare |
 | `ALLOWED_REDIRECT_HOSTS` | Claude, ChatGPT, Google, Mistral, Perplexity, Azure, VS Code, Cursor | where OAuth may redirect; loopback http is always allowed |
 | `CIMD_ENABLED` | `true` | client-id metadata documents (ChatGPT) |
 | `ACCESS_TTL_SECONDS` | 3600 | connector access token; refresh tokens last 90 days, rotating |
@@ -195,8 +202,9 @@ revocable per assistant, plus "via ChatGPT" tags and session-only 403s.
   ChatGPT (CIMD + `resource`) and Gemini Enterprise (pre-registered) — not with
   the real apps. Their menus and rules change; run the checklist below once
   the public URL exists.
-- **Docker image.** Docker Desktop was not running here; the Dockerfile and
-  compose file are written but not built.
+- **Docker on the VPS.** The image was built and run locally (starts as `node`,
+  refuses to start without its production settings, serves discovery with the
+  production URL); the compose project hasn't run on the server yet.
 
 Real-assistant checklist (demo logins, check the result in the app):
 
