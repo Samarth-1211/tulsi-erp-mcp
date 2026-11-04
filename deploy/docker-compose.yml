@@ -1,17 +1,18 @@
-# Tulsi ERP MCP connector — its own compose project on the same VPS as the
-# backend (RCRM_Backend/docker-compose.yml, project "tulsi-erp").
+# Tulsi ERP MCP connector on the VPS, next to the backend.
 #
-# It joins the backend's existing "edge" network, so:
-#   - it reaches the API at http://backend:3000 (never through the internet);
-#   - the backend's Caddy reaches it at tulsi-erp-mcp:8790 (see Caddyfile.snippet).
-# No port is published on the host.
+# Host networking, so it fits however the backend is run:
+#   - it listens on 127.0.0.1:8790 (not reachable from the internet);
+#   - it calls the API at http://127.0.0.1:3003 (the backend's published port);
+#   - the host's HTTPS proxy (the one serving the API) forwards
+#     https://MCP_DOMAIN → http://127.0.0.1:8790.
 #
-#   cd tulsi-erp-mcp/deploy
-#   cp .env.example .env        # fill in MCP_DOMAIN and CONNECTOR_SECRET
+#   cd /opt/tulsi-erp-mcp/deploy
+#   cp .env.example .env && chmod 600 .env    # set CONNECTOR_SECRET
 #   docker compose up -d --build
+#   curl http://127.0.0.1:8790/health          # {"ok":true,"app":"up",…}
 #
-# Start the backend first (its network must exist). Never `down -v`: the volume
-# holds every connection; losing it (or CONNECTOR_SECRET) only means users sign in again.
+# Never `down -v`: the volume holds every connection; losing it (or
+# CONNECTOR_SECRET) only means users sign in again.
 
 name: tulsi-erp-mcp
 
@@ -21,23 +22,22 @@ services:
       context: ..
     restart: unless-stopped
     init: true
+    network_mode: host
     environment:
       NODE_ENV: production
+      HOST: 127.0.0.1
+      PORT: ${MCP_PORT:-8790}
       PUBLIC_URL: https://${MCP_DOMAIN:?Set MCP_DOMAIN in .env}
-      API_URL: ${API_URL:-http://backend:3000}
+      API_URL: ${API_URL:-http://127.0.0.1:3003}
       CONNECTOR_SECRET: ${CONNECTOR_SECRET:?Set CONNECTOR_SECRET in .env (openssl rand -hex 32)}
       TOOL_MODE: catalog
       WRITE_LEVELS: ${WRITE_LEVELS:-low,normal,high}
       CIMD_ENABLED: "true"
       ALLOWED_REDIRECT_HOSTS: ${ALLOWED_REDIRECT_HOSTS:-claude.ai,claude.com,chatgpt.com,oauth-redirect.googleusercontent.com,oauth-redirect-sandbox.googleusercontent.com,oauth-redirect-test.googleusercontent.com,vertexaisearch.cloud.google.com,callback.mistral.ai,www.perplexity.ai,enterprise.perplexity.ai,global.consent.azure-apim.net,vscode.dev,cursor.com}
-      # One proxy hop (Caddy) in front: X-Forwarded-For's last entry is the real client IP.
+      # One proxy hop in front (the host's HTTPS proxy): X-Forwarded-For's last entry is the real client IP.
       TRUST_PROXY: "1"
     volumes:
       - tulsi_erp_mcp_data:/data
-    networks:
-      - edge
-    expose:
-      - "8790"
     cap_drop:
       - ALL
     security_opt:
@@ -51,11 +51,6 @@ services:
       options:
         max-size: "20m"
         max-file: "5"
-
-networks:
-  edge:
-    external: true
-    name: tulsi-erp_edge
 
 volumes:
   tulsi_erp_mcp_data:

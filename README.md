@@ -117,19 +117,25 @@ change their password, are deactivated or whose org is suspended get
 1. DNS: A record `mcp.tulsicrm` in the `tdmgroups.com` zone → the VPS IP,
    **DNS only / grey cloud** (like `API_DOMAIN`). It is a two-level name, which
    Cloudflare's Universal SSL doesn't cover, so it must not be proxied.
-2. Backend Caddy: already in `RCRM_Backend` (`deploy/Caddyfile` site block,
-   `MCP_DOMAIN` defaulting to `mcp.tulsicrm.tdmgroups.com` in its compose file).
-   Its normal deploy recreates Caddy, which then fetches the certificate once
-   DNS points at the VPS. If DNS came later: `cd /opt/tulsi-erp && docker compose restart caddy`.
-3. Connector, as `deploy` (private repo: add a read-only deploy key as in the backend's DEPLOYMENT.md §5.5):
+2. Connector, as `deploy` (private repo: add a read-only deploy key as in the backend's DEPLOYMENT.md §5.5).
+   It uses host networking: listens on `127.0.0.1:8790`, calls the API at
+   `API_URL` (default `http://127.0.0.1:3003`, the backend's published port).
    ```bash
    cd /opt && git clone git@github.com:Samarth-1211/tulsi-erp-mcp.git
    cd /opt/tulsi-erp-mcp/deploy
    cp .env.example .env && chmod 600 .env   # set CONNECTOR_SECRET=$(openssl rand -hex 32)
-   docker compose up -d --build             # joins the backend's tulsi-erp_edge network
-   curl https://mcp.tulsicrm.tdmgroups.com/health    # {"ok":true,"app":"up",…}
+   docker compose up -d --build
+   curl http://127.0.0.1:8790/health        # {"ok":true,"app":"up",…} — reaches the API
+   ```
+3. HTTPS: in the proxy that already serves the API on the host, forward
+   `https://mcp.tulsicrm.tdmgroups.com` → `http://127.0.0.1:8790` (pass `Host`,
+   `X-Forwarded-For`, `X-Forwarded-Proto`; body limit 1 MB; read timeout 120 s), with a certificate. Then:
+   ```bash
+   curl https://mcp.tulsicrm.tdmgroups.com/health
    curl https://mcp.tulsicrm.tdmgroups.com/.well-known/oauth-authorization-server
    ```
+   (If the backend runs the Caddy service from its compose file instead, the site
+   block in `RCRM_Backend/deploy/Caddyfile` does this; see deploy/Caddyfile.snippet.)
 4. Back up the `tulsi_erp_mcp_data` volume together with `CONNECTOR_SECRET`.
    Losing either only means everyone signs in again.
 
