@@ -1,15 +1,15 @@
 # Tulsi ERP MCP connector on the VPS, next to the backend.
 #
 # Host networking, so it fits however the backend is run:
-#   - it listens on 127.0.0.1:8790 (not reachable from the internet);
+#   - it listens on 127.0.0.1:8791 (not reachable from the internet);
 #   - it calls the API at http://127.0.0.1:3003 (the backend's published port);
 #   - the host's HTTPS proxy (the one serving the API) forwards
-#     https://MCP_DOMAIN → http://127.0.0.1:8790.
+#     https://MCP_DOMAIN → http://127.0.0.1:8791.
 #
 #   cd /opt/tulsi-erp-mcp/deploy
 #   cp .env.example .env && chmod 600 .env    # set CONNECTOR_SECRET
 #   docker compose up -d --build
-#   curl http://127.0.0.1:8790/health          # {"ok":true,"app":"up",…}
+#   curl http://127.0.0.1:8791/health          # {"ok":true,"app":"up",…}
 #
 # Never `down -v`: the volume holds every connection; losing it (or
 # CONNECTOR_SECRET) only means users sign in again.
@@ -26,7 +26,7 @@ services:
     environment:
       NODE_ENV: production
       HOST: 127.0.0.1
-      PORT: ${MCP_PORT:-8790}
+      PORT: ${MCP_PORT:-8791}
       PUBLIC_URL: https://${MCP_DOMAIN:?Set MCP_DOMAIN in .env}
       API_URL: ${API_URL:-http://127.0.0.1:3003}
       CONNECTOR_SECRET: ${CONNECTOR_SECRET:?Set CONNECTOR_SECRET in .env (openssl rand -hex 32)}

@@ -118,17 +118,17 @@ change their password, are deactivated or whose org is suspended get
    **DNS only / grey cloud** (like `API_DOMAIN`). It is a two-level name, which
    Cloudflare's Universal SSL doesn't cover, so it must not be proxied.
 2. Connector, as `deploy` (private repo: add a read-only deploy key as in the backend's DEPLOYMENT.md §5.5).
-   It uses host networking: listens on `127.0.0.1:8790`, calls the API at
+   It uses host networking: listens on `127.0.0.1:8791` (8790 is the real-estate CRM connector), calls the API at
    `API_URL` (default `http://127.0.0.1:3003`, the backend's published port).
    ```bash
    cd /opt && git clone git@github.com:Samarth-1211/tulsi-erp-mcp.git
    cd /opt/tulsi-erp-mcp/deploy
    cp .env.example .env && chmod 600 .env   # set CONNECTOR_SECRET=$(openssl rand -hex 32)
    docker compose up -d --build
-   curl http://127.0.0.1:8790/health        # {"ok":true,"app":"up",…} — reaches the API
+   curl http://127.0.0.1:8791/health        # {"ok":true,"app":"up",…} — reaches the API
    ```
 3. HTTPS: in the proxy that already serves the API on the host, forward
-   `https://mcp.tulsicrm.tdmgroups.com` → `http://127.0.0.1:8790` (pass `Host`,
+   `https://mcp.tulsicrm.tdmgroups.com` → `http://127.0.0.1:8791` (pass `Host`,
    `X-Forwarded-For`, `X-Forwarded-Proto`; body limit 1 MB; read timeout 120 s), with a certificate. Then:
    ```bash
    curl https://mcp.tulsicrm.tdmgroups.com/health
